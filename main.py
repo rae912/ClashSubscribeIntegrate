@@ -72,7 +72,7 @@ class Vmess(object):
             self.config += "  - {}\n".format(json.dumps(p, ensure_ascii=False))
 
         # write proxies name
-        self.config += """\n\nproxy-groups:\n- name: V2\n  proxies:\n"""
+        self.config += """\n\nproxy-groups:\n- name: AUTO\n  proxies:\n"""
         for n in self.proxies_name:
             self.config += "  - {}\n".format(n)
 
