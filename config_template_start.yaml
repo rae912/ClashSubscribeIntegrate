@@ -1,0 +1,2 @@
+proxies:
+  - {name: Test, server: 127.0.0.1, port: 7070, type: socks5}

@@ -1,0 +1,7 @@
+{
+  "user_agent": "ClashX Pro/1.72.0.4 (com.west2online.ClashXPro; build:1.72.0.4; macOS 12.1.0) Alamofire/5.4.4",
+  "export_path": "~/clash/config.yaml",
+  "subscribe_list": [
+    "https://your_clash_subscribe_link_here.dev"
+  ]
+}
