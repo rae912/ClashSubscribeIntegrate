@@ -75,7 +75,7 @@ class Vmess(object):
         # write proxies name
         self.config += """\n\nproxy-groups:\n- name: AUTO\n  proxies:\n"""
         for n in self.proxies_name:
-            self.config += "  - {}\n".format(n)
+            self.config += "  - \"{}\"\n".format(n)
 
         # write end
         self.config += self.import_config_end()
