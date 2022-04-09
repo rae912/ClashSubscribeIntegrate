@@ -18,6 +18,7 @@ class Vmess(object):
     def __init__(self):
         self.start_url = config.get("subscribe_list")
         self.export_path = config.get("export_path")
+        self.gist = config.get("gist")
         self.proxies = []
         self.proxies_name = []
         self.config = ""
@@ -42,7 +43,7 @@ class Vmess(object):
             t.start()
 
         for t in threads:
-            t.join()
+            t.join(timeout=5)
             logging.debug("End thread: {}".format(t.native_id))
 
     @staticmethod
@@ -66,7 +67,7 @@ class Vmess(object):
         self.config = self.import_config_index()
 
         # write proxies
-        for p_name in self.global_proxies.keys():
+        for p_name in sorted(self.global_proxies.keys()):
             p = self.global_proxies[p_name]
             self.proxies_name.append(p_name)
             self.config += "  - {}\n".format(json.dumps(p, ensure_ascii=False))
@@ -82,10 +83,37 @@ class Vmess(object):
         with open(self.export_path, "w") as f:
             f.write(self.config)
 
+    # upload to gist for subscribe
+    def upload_to_gist(self):
+        if self.gist.get("id") is None or self.gist.get("id") == "": return
+
+        logging.info("Upload to gist...")
+        url = "https://api.github.com/gists/" + self.gist.get("id")
+
+        payload = json.dumps({
+          "description": "clash",
+          "public": True,
+          "files": {
+            "clash.yaml": {
+              "content": self.config
+            }
+          }
+        })
+        headers = {
+          'Accept': 'application/vnd.github.v3+json',
+          'Authorization': 'Basic ' + self.gist.get("token"),
+          'Content-Type': 'application/json'
+        }
+
+        response = requests.request("PATCH", url, headers=headers, data=payload)
+        logging.debug(response.status_code)
+
+
     def run(self):
         self.collect_proxy()
         self.clean_proxies()
         self.export_proxy()
+        self.upload_to_gist()
 
 
 if __name__ == "__main__":

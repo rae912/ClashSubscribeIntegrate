@@ -3,5 +3,9 @@
   "export_path": "~/clash/config.yaml",
   "subscribe_list": [
     "https://your_clash_subscribe_link_here.dev"
-  ]
+  ],
+  "gist": {
+    "id": "",
+    "token": ""
+  }
 }
