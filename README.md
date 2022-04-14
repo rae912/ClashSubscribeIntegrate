@@ -3,9 +3,10 @@
 ## Description
 To merge multiple Clash Subscription to one clash config. This Python script will do follow actions:
 1. Download content from subscription
-2. Parser proxies and generate proxies names
+2. Parser proxies and generate proxies names with country flags
 3. Generate finally clash config with template automatically
 4. Finally config = template_start + (this export content) + template_end
+5. Upload to Gist for generating the subscribe url.
 
 ## Usage
 1. Edit `config.json`
@@ -16,7 +17,11 @@ To merge multiple Clash Subscription to one clash config. This Python script wil
   "export_path": "~/clash/config.yaml", // your output directory with config name
   "subscribe_list": [ // your subscriptions links
       "https://your_clash_subscribe_link_here.dev"
-  ]
+  ],
+  "gist": {
+    "id": "",
+    "token": ""
+  }
 }
 ```
 
