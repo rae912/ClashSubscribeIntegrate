@@ -79,7 +79,7 @@ class Vmess(object):
             self.config += config.replace('{"name": "', '{"name": "' + country_flag)
 
         # write proxies name
-        self.config += """\n\nproxy-groups:\n- name: AUTO\n  proxies:\n"""
+        self.config += """\n\nproxy-groups:\n- name: V2\n  proxies:\n"""
         for n in self.proxies_name:
             country_flag = self.global_proxies_with_country_flags.get(n)
             # generate server name with country flag
@@ -128,6 +128,10 @@ class Vmess(object):
         if data_type == "domain":
             url = "https://dns.google/resolve?name=" + domain_or_ip
             r = requests.get(url)
+            if r.status_code != 200:
+                logging.error("HTTP:{} domain_or_ip: {} Resp:{}".format(r.status_code, domain_or_ip, r.text))
+                return "1.1.1.1"
+
             resp = r.json().get("Answer")
             if resp:
                 domain_or_ip = r.json().get("Answer")[0].get("data")
@@ -141,18 +145,31 @@ class Vmess(object):
 
     # get country code by batch
     def _iplist_to_country_code(self, ip_list):
+        # remove duplicate ip
+        ip_list = list(set(ip_list))
+
+        # API receive max to 100 ip once
         url = "http://ip-api.com/batch"
         ip_to_country_code = {}
-        r = requests.post(url, data=json.dumps(ip_list))
-        for i in r.json():
-            ip_to_country_code[i.get("query")] = i.get("countryCode")
+
+        for i in range(0, len(ip_list), 100):
+            if i + 100 < len(ip_list):
+                tmp_list = ip_list[i:i+100]
+            else:
+                tmp_list = ip_list[i:]
+
+            r = requests.post(url, data=json.dumps(tmp_list))
+            if r.status_code != 200:
+                logging.debug(ip_list)
+                logging.error("HTTP:{} Resp:{}".format(r.status_code, r.text))
+            else:
+                for i in r.json():
+                    ip_to_country_code[i.get("query")] = i.get("countryCode")
         
         return ip_to_country_code
 
-    # query dns to get IP and append
-    def query_dns(self):
-        print(self.global_proxies)
-
+    # update global proxies to append the country flags
+    def append_country_flags(self):
         domain_or_ip_list = list(map(lambda x: x.get("server"), self.global_proxies.values()))
         ip_list_map = {}
         for i in domain_or_ip_list:
@@ -172,13 +189,13 @@ class Vmess(object):
                 self.global_proxies_with_country_flags[item["name"]] = self.country_map["US"]
 
 
-        print(self.global_proxies)
+        logging.debug(self.global_proxies)
 
 
     def run(self):
         self.collect_proxy()
         self.clean_proxies()
-        self.query_dns()
+        self.append_country_flags()
         self.export_proxy()
         self.upload_to_gist()
 
