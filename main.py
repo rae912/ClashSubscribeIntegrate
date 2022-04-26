@@ -34,10 +34,21 @@ class Vmess(object):
         try:
             r = requests.get(url, headers=header)
             data = yaml.safe_load(r.text)
+
+            if not data.keys():
+                logging.error("Empty Response:" + url)
+                return
+
+            if not data.get("proxies") or len(data.get("proxies")) == 0:
+                logging.error("Empty Proxies:" + url)
+                return
+
+            # handle proxies
             for p in data.get("proxies"):
                 self.proxies.append(p)
         except Exception as e:
-            logging.error("Parse failed: {} Detail:".format(url, e))
+            logging.exception("message")
+            logging.error("Parse failed: " + url)
 
     def collect_proxy(self):
         threads = [threading.Thread(target=self.parse_proxy, args=(url,)) for url in self.start_url]
